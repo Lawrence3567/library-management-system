@@ -102,16 +102,27 @@ export const Login = () => {
       return
     }
 
-    // Basic validations
+    // Basic input validations
     if (signupData.password.length < 6) {
       setError('Password must be at least 6 characters long')
       return
     }
 
-    // Email validation
+    // Email input validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(signupData.email)) {
       setError('Please enter a valid email address')
+      return
+    }
+
+    // Phone input validation
+    const phoneRegex = /^\+?[\d\s\-()]{8,20}$/ 
+    if (!signupData.phone) {
+      setError('Phone number is required.')
+      return
+    }
+    if (!phoneRegex.test(signupData.phone)) {
+      setError('Please enter a valid phone number format (e.g., +60 11-123-4567).')
       return
     }
     

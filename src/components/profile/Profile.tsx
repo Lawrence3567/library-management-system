@@ -105,7 +105,7 @@ export const Profile = () => {
       return;
     }
     if (!phoneRegex.test(profile.phone)) {
-      setMessage({ type: 'error', text: 'Please enter a valid phone number format (e.g., +1 555-123-4567).' });
+      setMessage({ type: 'error', text: 'Please enter a valid phone number format (e.g., +60 11-123-4567).' });
       setUpdateLoading(false);
       return;
     }
