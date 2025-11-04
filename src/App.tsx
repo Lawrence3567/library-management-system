@@ -5,6 +5,11 @@ import ResetPassword from './components/auth/ResetPassword'
 import Profile from './components/profile/Profile'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import Home from './components/home/Home'
+import Report from './components/report/Report'
+import { ManageBooks } from './components/books/ManageBooks'
+import { ManageRequests } from './components/books/ManageRequests'
+import { BrowseBooks } from './components/books/BrowseBooks'
+import { BorrowingHistory } from './components/books/BorrowingHistory'
 import RootLayout from './components/layout/RootLayout'
 import './App.css'
 
@@ -34,6 +39,46 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/report"
+                element={
+                  <ProtectedRoute>
+                    <Report />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/manage-books"
+                element={
+                  <ProtectedRoute allowedRoles={['Librarian']}>
+                    <ManageBooks />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/manage-requests"
+                element={
+                  <ProtectedRoute allowedRoles={['Librarian']}>
+                    <ManageRequests />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/browse-books"
+                element={
+                  <ProtectedRoute>
+                    <BrowseBooks />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/borrowing-history"
+                element={
+                  <ProtectedRoute>
+                    <BorrowingHistory />
                   </ProtectedRoute>
                 }
               />

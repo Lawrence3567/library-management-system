@@ -62,14 +62,14 @@
   gap: 1.5rem;
 }
 
-.form-group label {
+.profile-form-group label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
   color: #6F4C3E;
 }
 
-.form-group input {
+.profile-form-group input {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
@@ -79,19 +79,19 @@
   transition: border-color 0.2s;
 }
 
-.form-group input:focus {
+.profile-form-group input:focus {
   border-color: #6F4C3E;
   outline: none;
   box-shadow: 0 0 0 2px rgba(111, 76, 62, 0.2);
 }
 
-.form-group input[disabled] {
+.profile-form-group input[disabled] {
     background-color: #f1f1f1;
     color: #888;
     cursor: not-allowed;
 }
 
-.form-group small {
+.profile-form-group small {
     display: block;
     margin-top: 5px;
     color: #999;

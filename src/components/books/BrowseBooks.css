@@ -1,0 +1,124 @@
+.browse-books-container {
+  padding: 2rem;
+}
+
+.browse-books-header {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #6F4C3E;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(111, 76, 62, 0.2);
+}
+
+.browse-books-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.browse-books-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: #E8CBA0;
+  font-weight: 600;
+}
+
+.borrowing-history-link {
+  color: #E8CBA0;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border: 1px solid #E8CBA0;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.borrowing-history-link:hover {
+  background-color: #E8CBA0;
+  color: #6F4C3E;
+}
+
+.search-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.search-field-select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.books-table-container {
+  overflow-x: auto;
+}
+
+.books-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.books-table th,
+.books-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.books-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.books-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.borrow-button {
+  padding: 0.25rem 0.5rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.borrow-button:hover {
+  background-color: #218838;
+}
+
+.unavailable-text {
+  color: #dc3545;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.copies-unavailable {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.error {
+  color: #dc3545;
+  padding: 1rem;
+  background-color: #f8d7da;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}

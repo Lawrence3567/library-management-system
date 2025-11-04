@@ -112,15 +112,16 @@ export const Profile = () => {
 
     try {
         // Update Email in Supabase Auth (This is REQUIRED for the user to login with the new email) ---
-        const { error: authUpdateError } = await supabase.auth.updateUser({
-            email: profile.email,
-            data: { 
-                full_name: profile.name, 
-                phone: profile.phone
-            }
-        });
+        // const { error: authUpdateError } = await supabase.auth.updateUser({
+        //     email: profile.email,
+        //     data: { 
+        //         full_name: profile.name, 
+        //         phone: profile.phone
+        //     }
+        // });
 
-        if (authUpdateError) throw authUpdateError;
+        // if (authUpdateError) throw authUpdateError;
+
         // Use the .from().update() method directly on the public.users table
         const { error: dbError } = await supabase
             .from('users') // Target the public.users table
@@ -183,7 +184,7 @@ export const Profile = () => {
 
         <form onSubmit={handleSubmit} className="profile-form">
           
-          <div className="form-group">
+          <div className="profile-form-group">
             <label htmlFor="role">Role</label>
             <input
               id="role"
@@ -195,7 +196,7 @@ export const Profile = () => {
             <small>User role cannot be changed.</small>
           </div>
 
-          <div className="form-group">
+          <div className="profile-form-group">
             <label htmlFor="email">Email Address</label>
             {/* Email is typically not changed directly via profile form for security/verification reasons */}
             <input 
@@ -208,7 +209,7 @@ export const Profile = () => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="profile-form-group">
             <label htmlFor="name">Full Name</label>
             <input
               id="name"
@@ -220,7 +221,7 @@ export const Profile = () => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="profile-form-group">
             <label htmlFor="phone">Phone Number</label>
             <input
               id="phone"

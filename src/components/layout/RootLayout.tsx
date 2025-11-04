@@ -1,7 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import type { AuthChangeEvent } from '@supabase/supabase-js'
+import SideMenu from './SideMenu'
+import './RootLayout.css'
 
 interface RootLayoutProps {
   children: React.ReactNode
@@ -10,6 +12,8 @@ interface RootLayoutProps {
 export const RootLayout = ({ children }: RootLayoutProps) => {
   const navigate = useNavigate()
   const location = useLocation()
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const isAuthPage = location.pathname.includes('/auth/') || location.pathname === '/login'
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
@@ -27,7 +31,27 @@ export const RootLayout = ({ children }: RootLayoutProps) => {
     return () => subscription.unsubscribe()
   }, [navigate, location.pathname])
 
-  return <>{children}</>
+  const handleSidebarCollapse = (collapsed: boolean) => {
+    setIsSidebarCollapsed(collapsed)
+  }
+
+  return (
+    <div className="root-layout">
+      {!isAuthPage && (
+        <SideMenu 
+          isCollapsed={isSidebarCollapsed} 
+          onToggleCollapse={handleSidebarCollapse}
+        />
+      )}
+      <main 
+        className={`main-content ${
+          !isAuthPage ? 'with-sidebar' : ''
+        } ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+      >
+        {children}
+      </main>
+    </div>
+  )
 }
 
 export default RootLayout

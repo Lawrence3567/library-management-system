@@ -4,9 +4,10 @@ import { useAuth } from '../../hooks/useAuth'
 
 interface ProtectedRouteProps {
   children: ReactNode
+  allowedRoles?: string[]
 }
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { session, loading } = useAuth()
   const location = useLocation()
 
@@ -16,6 +17,12 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  const userRole = session.user.user_metadata.role || 'Student'
+
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>
