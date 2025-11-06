@@ -32,6 +32,11 @@ const SideMenu = ({ isCollapsed, onToggleCollapse }: SideMenuProps) => {
         path: '/manage-requests',
         label: 'Manage Requests',
         icon: '📋'
+      },
+      {
+        path: '/fine-rules',
+        label: 'Fine Rules',
+        icon: '💰'
       }
     ] : [
       {

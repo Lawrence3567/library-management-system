@@ -102,6 +102,27 @@
   font-weight: 500;
 }
 
+/* Fine status styles */
+.fine-status {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.fine-status.pending {
+  color: #dc3545;
+  background-color: #ffeaea;
+}
+
+.fine-status.paid {
+  color: #198754;
+  background-color: #e8f5e9;
+  color: #dc3545;
+  font-weight: 500;
+}
+
 /* Action buttons */
 .return-button,
 .approve-button,
@@ -193,7 +214,7 @@
 }
 
 .form-group textarea {
-  width: 100%;
+  width: 95%;
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;

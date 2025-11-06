@@ -1,7 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
+import { ConfirmDialog } from '../common/ConfirmDialog'
 import './BorrowingHistory.css'
+
+interface Fine {
+  id: string
+  amount: number
+  status: 'Pending' | 'Paid'
+  payment_date: string | null
+}
 
 interface BorrowingRecord {
   id: string
@@ -15,6 +23,7 @@ interface BorrowingRecord {
     title: string
     author: string
   }
+  fines?: Fine[]
 }
 
 interface BorrowRequest {
@@ -40,6 +49,7 @@ export const BorrowingHistory = () => {
   const [requests, setRequests] = useState<BorrowRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [payFineDialog, setPayFineDialog] = useState<{ isOpen: boolean; fineId?: string; bookTitle?: string }>({ isOpen: false })
 
   const fetchBorrowingRecords = useCallback(async () => {
     if (!user?.id) {
@@ -76,6 +86,12 @@ export const BorrowingHistory = () => {
           book:book_id (
             title,
             author
+          ),
+          fines (
+            id,
+            amount,
+            status,
+            payment_date
           )
         `)
         .eq('user_id', user?.id)
@@ -164,6 +180,31 @@ export const BorrowingHistory = () => {
     )
   }
 
+  const handlePayFine = async (fineId: string) => {
+    try {
+      setError(null);
+      const { error: updateError } = await supabase
+        .from('fines')
+        .update({
+          status: 'Paid',
+          payment_date: new Date().toISOString(),
+        })
+        .eq('id', fineId);
+
+      if (updateError) throw updateError;
+      await fetchBorrowingRecords();
+    } catch (err) {
+      console.error('Error paying fine:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while paying the fine');
+    }
+  };
+
+  const handleConfirmPayFine = async () => {
+    if (!payFineDialog.fineId) return setPayFineDialog({ isOpen: false })
+    await handlePayFine(payFineDialog.fineId)
+    setPayFineDialog({ isOpen: false })
+  }
+
   const getOverdueContent = () => {
     return (
       <table className="records-table">
@@ -174,25 +215,51 @@ export const BorrowingHistory = () => {
             <th>Borrow Date</th>
             <th>Due Date</th>
             <th>Days Overdue</th>
+            <th>Fine</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {records.filter(r => r.status === 'Overdue').length === 0 ? (
             <tr>
-              <td colSpan={5} className="no-records">No overdue books</td>
+              <td colSpan={7} className="no-records">No overdue books</td>
             </tr>
           ) : (
-            records.filter(r => r.status === 'Overdue').map((record) => (
-              <tr key={record.id}>
-                <td>{record.book.title}</td>
-                <td>{record.book.author}</td>
-                <td>{new Date(record.borrowed_date).toLocaleDateString()}</td>
-                <td>{new Date(record.due_date).toLocaleDateString()}</td>
-                <td className="overdue">
-                  {Math.ceil((new Date().getTime() - new Date(record.due_date).getTime()) / (1000 * 60 * 60 * 24))} days
-                </td>
-              </tr>
-            ))
+            records.filter(r => r.status === 'Overdue').map((record) => {
+              const daysOverdue = Math.ceil(
+                (new Date().getTime() - new Date(record.due_date).getTime()) / (1000 * 60 * 60 * 24)
+              );
+              const pendingFine = record.fines?.find(f => f.status === 'Pending');
+
+              return (
+                <tr key={record.id}>
+                  <td>{record.book.title}</td>
+                  <td>{record.book.author}</td>
+                  <td>{new Date(record.borrowed_date).toLocaleDateString()}</td>
+                  <td>{new Date(record.due_date).toLocaleDateString()}</td>
+                  <td className="overdue">
+                    {daysOverdue} days
+                  </td>
+                  <td className="fine-amount">
+                    {pendingFine ? (
+                      <span>RM {pendingFine.amount.toFixed(2)}</span>
+                    ) : (
+                      ''
+                    )}
+                  </td>
+                  <td className="actions">
+                    {pendingFine && (
+                      <button
+                        className="pay-fine-button"
+                        onClick={() => setPayFineDialog({ isOpen: true, fineId: pendingFine.id, bookTitle: record.book.title })}
+                      >
+                        Pay Fine
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
@@ -324,6 +391,17 @@ export const BorrowingHistory = () => {
       <div className="records-table-container">
         {getTabContent()}
       </div>
+
+      <ConfirmDialog
+        isOpen={payFineDialog.isOpen}
+        title="Pay Fine"
+        message={`Are you sure you want to pay the fine for "${payFineDialog.bookTitle || ''}"?`}
+        confirmButtonText="Yes"
+        cancelButtonText="No"
+        onConfirm={handleConfirmPayFine}
+        onCancel={() => setPayFineDialog({ isOpen: false })}
+        type="warning"
+      />
     </div>
   )
 }

@@ -133,6 +133,27 @@
   font-weight: 500;
 }
 
+.fine-amount {
+  color: #ea4335;
+  font-weight: 500;
+}
+
+.pay-fine-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.pay-fine-button:hover {
+  background-color: #218838;
+}
+
 /* Loading and error states */
 .loading,
 .error {

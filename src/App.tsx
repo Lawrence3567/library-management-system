@@ -11,6 +11,7 @@ import { ManageRequests } from './components/books/ManageRequests'
 import { BrowseBooks } from './components/books/BrowseBooks'
 import { BorrowingHistory } from './components/books/BorrowingHistory'
 import RootLayout from './components/layout/RootLayout'
+import FineRules from './components/fines/FineRules'
 import './App.css'
 
 // Create a client
@@ -79,6 +80,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <BorrowingHistory />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/fine-rules"
+                element={
+                  <ProtectedRoute allowedRoles={['Librarian']}>
+                    <FineRules />
                   </ProtectedRoute>
                 }
               />

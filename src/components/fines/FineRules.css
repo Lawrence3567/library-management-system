@@ -1,0 +1,168 @@
+.fine-rules-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.fine-rules-header {
+  margin-bottom: 2rem;
+}
+
+.fine-rules-header h1 {
+  color: #2C1810;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.fine-rules-header p {
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.fine-rules-form {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #6F4C3E;
+}
+
+.submit-button {
+  background-color: #6F4C3E;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.submit-button:hover {
+  background-color: #5a3e33;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #dc3545;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #f5c6cb;
+}
+
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #c3e6cb;
+}
+
+.fine-rules-current {
+  margin-top: 2rem;
+}
+
+.fine-rules-current h2 {
+  color: #2C1810;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.fine-rules-info {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.current-amount {
+  font-size: 1.25rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.current-amount strong {
+  color: #6F4C3E;
+  font-weight: 600;
+}
+
+.last-updated {
+  color: #666;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.no-rule {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+}
+
+.fine-rules-actions {
+  margin-top: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.fine-rules-actions h2 {
+  color: #2C1810;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.actions-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.process-fines-button {
+  background-color: #6F4C3E;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.process-fines-button:hover {
+  background-color: #5a3e33;
+}
+
+.action-description {
+  color: #666;
+  font-size: 0.875rem;
+  font-style: italic;
+}
