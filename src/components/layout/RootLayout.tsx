@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
-import type { AuthChangeEvent } from '@supabase/supabase-js'
+import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import SideMenu from './SideMenu'
 import './RootLayout.css'
 
@@ -10,26 +8,12 @@ interface RootLayoutProps {
 }
 
 export const RootLayout = ({ children }: RootLayoutProps) => {
-  const navigate = useNavigate()
   const location = useLocation()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const isAuthPage = location.pathname.includes('/auth/') || location.pathname === '/login'
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
-      if (event === 'SIGNED_IN') {
-        // Don't redirect if already on home page
-        if (location.pathname !== '/') {
-          navigate('/')
-        }
-      }
-      if (event === 'SIGNED_OUT') {
-        navigate('/login')
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [navigate, location.pathname])
+  // Note: Auth state changes are now handled by AuthContext
+  // Navigation on login/logout is handled by Login component and SideMenu
 
   const handleSidebarCollapse = (collapsed: boolean) => {
     setIsSidebarCollapsed(collapsed)

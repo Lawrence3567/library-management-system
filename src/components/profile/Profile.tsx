@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import './Profile.css';
 
 interface UserProfile {
@@ -11,63 +12,31 @@ interface UserProfile {
 }
 
 export const Profile = () => {
+  const { user, session, loading: authLoading, updateProfile: updateContextProfile, refreshSession } = useAuth();
   const [profile, setProfile] = useState<UserProfile>({
     email: '',
     name: '',
     phone: '',
     role: ''
   });
-  const [loading, setLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUserProfile();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Fetch current user details directly from the public.users table
-  const fetchUserProfile = async () => {
-    setLoading(true);
-    try {
-      // 1. Get the current authenticated user's ID
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-
-      if (user?.id) {
-        // 2. Query the public.users table using the user's ID
-        const { data: userData, error: dbError } = await supabase
-          .from('users')
-          // Select only the fields needed for the profile update form
-          .select('email, name, phone, role') 
-          .eq('id', user.id)
-          .single(); // Expect a single matching row
-
-        if (dbError) throw dbError;
-
-        if (userData) {
-          // 3. Set the profile state using the data from the database
-          setProfile({
-            email: userData.email,
-            name: userData.name, 
-            phone: userData.phone,
-            role: userData.role,
-          });
-        } else {
-          setMessage({ type: 'error', text: 'Profile record not found in database. Please contact support.' });
-        }
-      } else {
-        // If no user is logged in, redirect them
-        navigate('/login');
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      setMessage({ type: 'error', text: (error as Error).message || 'Failed to load profile data.' });
-    } finally {
-      setLoading(false);
+    // Initialize profile from context user data
+    if (user) {
+      setProfile({
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        role: user.role
+      });
+    } else if (!authLoading && !session) {
+      // No user and not loading, redirect to login
+      navigate('/auth/login');
     }
-  };
+  }, [user, authLoading, session, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -79,11 +48,7 @@ export const Profile = () => {
     setMessage(null);
     setUpdateLoading(true);
 
-    // Get the current user ID to ensure we update the correct row
-    const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id;
-
-    if (!userId) {
+    if (!session?.user?.id) {
         setMessage({ type: 'error', text: 'You must be logged in to update your profile.' });
         setUpdateLoading(false);
         return;
@@ -111,33 +76,14 @@ export const Profile = () => {
     }
 
     try {
-        // Update Email in Supabase Auth (This is REQUIRED for the user to login with the new email) ---
-        // const { error: authUpdateError } = await supabase.auth.updateUser({
-        //     email: profile.email,
-        //     data: { 
-        //         full_name: profile.name, 
-        //         phone: profile.phone
-        //     }
-        // });
+        // Use the context's updateProfile method
+        await updateContextProfile({ 
+            name: profile.name,
+            email: profile.email,
+            phone: profile.phone
+        });
 
-        // if (authUpdateError) throw authUpdateError;
-
-        // Use the .from().update() method directly on the public.users table
-        const { error: dbError } = await supabase
-            .from('users') // Target the public.users table
-            .update({ 
-                name: profile.name,
-                email: profile.email,
-                phone: profile.phone
-            })
-            .eq('id', userId); // The filter to target the current user's row (Crucial for RLS)
-
-        if (dbError) throw dbError;
-
-        setMessage({ type: 'success', text: 'Profile updated successfully!' });
-
-        // IMPORTANT: Update auth.users metadata as well for consistency across Supabase
-        // and to ensure components fetching user data directly from the session see the name update.
+        // Update auth.users metadata for consistency
         const { error: authError } = await supabase.auth.updateUser({
             data: { 
                 full_name: profile.name,
@@ -147,8 +93,10 @@ export const Profile = () => {
         
         if (authError) console.error("Warning: Failed to update auth metadata.", authError);
         
-        // This is often needed to refresh the session and ensure subsequent reads are accurate
-        await supabase.auth.refreshSession(); 
+        // Refresh the session to ensure the context gets the latest data
+        await refreshSession();
+
+        setMessage({ type: 'success', text: 'Profile updated successfully!' });
 
     } catch (error) {
         console.error('Error updating profile:', error);
@@ -158,7 +106,7 @@ export const Profile = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="profile-container loading">
         Loading profile...

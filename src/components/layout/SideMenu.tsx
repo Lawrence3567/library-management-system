@@ -1,5 +1,4 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import './SideMenu.css'
 
@@ -11,10 +10,10 @@ interface SideMenuProps {
 const SideMenu = ({ isCollapsed, onToggleCollapse }: SideMenuProps) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { session } = useAuth()
+  const { session, user, signOut } = useAuth()
   
-  // Get user role from session metadata
-  const userRole = session?.user?.user_metadata?.role || 'Student'
+  // Get user role from user profile or session metadata as fallback
+  const userRole = user?.role || session?.user?.user_metadata?.role || 'Student'
 
   const menuItems = [
     {
@@ -59,9 +58,8 @@ const SideMenu = ({ isCollapsed, onToggleCollapse }: SideMenuProps) => {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      navigate('/login')
+      await signOut()
+      navigate('/auth/login')
     } catch (err) {
       console.error('Error logging out:', err)
     }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import type { AuthChangeEvent, User } from '@supabase/supabase-js'
 import type { LoginFormData, SignupFormData } from '../../types/auth'
+import { useAuth } from '../../hooks/useAuth'
 import RoleSelectionModal from './RoleSelectionModal'
 import libraryImage from '../../assets/library-login-img.jpg'
 import './Login.css'
@@ -16,6 +17,7 @@ export const Login = () => {
   const [pendingGoogleUser, setPendingGoogleUser] = useState<User | null>(null)
   const [isForgotPassword, setIsForgotPassword] = useState(false)
   const navigate = useNavigate()
+  const { session, signIn: contextSignIn, signUp: contextSignUp } = useAuth()
   
   const [loginData, setLoginData] = useState<LoginFormData>({
     email: '',
@@ -44,12 +46,10 @@ export const Login = () => {
       return
     }
 
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate('/')
-      }
-    })
+    // Check if user is already logged in using context session
+    if (session) {
+      navigate('/')
+    }
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -75,18 +75,18 @@ export const Login = () => {
     )
 
     return () => subscription.unsubscribe()
-  }, [navigate])
+  }, [navigate, session])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       setLoading(true)
       setError(null)
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: loginData.email,
-        password: loginData.password,
-      })
+      const { error: signInError } = await contextSignIn(loginData.email, loginData.password)
       if (signInError) throw signInError
+      
+      // Navigate to home page on successful login
+      navigate('/')
     } catch (err) {
       console.error('Error logging in:', err)
       setError(err instanceof Error ? err.message : 'Failed to sign in')
@@ -130,34 +130,35 @@ export const Login = () => {
       setLoading(true)
       setError(null)
 
-      // Register the user with their actual email
-      const { error: signUpError, data } = await supabase.auth.signUp({
-        email: signupData.email,
-        password: signupData.password,
-        options: {
-          data: {
-            name: signupData.name,
-            phone: signupData.phone,
-            role: signupData.role
-          }
+      // Register the user using context signUp
+      const { error: signUpError } = await contextSignUp(
+        signupData.email, 
+        signupData.password,
+        {
+          name: signupData.name,
+          phone: signupData.phone,
+          role: signupData.role
         }
-      })
+      )
       
       if (signUpError) {
         // Handle specific error cases
-        if (signUpError.message.includes('email_address_invalid')) {
+        if (signUpError.message?.includes('email_address_invalid')) {
           throw new Error('Please use a valid email address (e.g., your@gmail.com)')
         } else {
           throw signUpError
         }
       }
 
+      // Get the newly created user
+      const { data: { user } } = await supabase.auth.getUser()
+
       // Create user record
-      if (data.user) {
+      if (user) {
         const { error: userError } = await supabase
           .from('users')
           .insert({
-            id: data.user.id,
+            id: user.id,
             name: signupData.name,
             email: signupData.email,
             phone: signupData.phone,
@@ -167,7 +168,8 @@ export const Login = () => {
         if (userError) throw userError
 
         // Check if email confirmation is required
-        if (data.session) {
+        const { data: { session: currentSession } } = await supabase.auth.getSession()
+        if (currentSession) {
           // User is signed in immediately, navigate to home
           navigate('/')
         } else {
