@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
-import { ConfirmDialog } from '../common/ConfirmDialog'
 import './BorrowingHistory.css'
 
 interface Fine {
@@ -49,7 +48,6 @@ export const BorrowingHistory = () => {
   const [requests, setRequests] = useState<BorrowRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [payFineDialog, setPayFineDialog] = useState<{ isOpen: boolean; fineId?: string; bookTitle?: string }>({ isOpen: false })
 
   const fetchBorrowingRecords = useCallback(async () => {
     if (!user?.id) {
@@ -180,30 +178,6 @@ export const BorrowingHistory = () => {
     )
   }
 
-  const handlePayFine = async (fineId: string) => {
-    try {
-      setError(null);
-      const { error: updateError } = await supabase
-        .from('fines')
-        .update({
-          status: 'Paid',
-          payment_date: new Date().toISOString(),
-        })
-        .eq('id', fineId);
-
-      if (updateError) throw updateError;
-      await fetchBorrowingRecords();
-    } catch (err) {
-      console.error('Error paying fine:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while paying the fine');
-    }
-  };
-
-  const handleConfirmPayFine = async () => {
-    if (!payFineDialog.fineId) return setPayFineDialog({ isOpen: false })
-    await handlePayFine(payFineDialog.fineId)
-    setPayFineDialog({ isOpen: false })
-  }
 
   const getOverdueContent = () => {
     return (
@@ -215,14 +189,13 @@ export const BorrowingHistory = () => {
             <th>Borrow Date</th>
             <th>Due Date</th>
             <th>Days Overdue</th>
-            <th>Fine</th>
-            <th>Actions</th>
+            <th>Fine Status</th>
           </tr>
         </thead>
         <tbody>
           {records.filter(r => r.status === 'Overdue').length === 0 ? (
             <tr>
-              <td colSpan={7} className="no-records">No overdue books</td>
+              <td colSpan={6} className="no-records">No overdue books</td>
             </tr>
           ) : (
             records.filter(r => r.status === 'Overdue').map((record) => {
@@ -242,19 +215,9 @@ export const BorrowingHistory = () => {
                   </td>
                   <td className="fine-amount">
                     {pendingFine ? (
-                      <span>RM {pendingFine.amount.toFixed(2)}</span>
+                      <span className="fine-status pending">Pending (RM {pendingFine.amount.toFixed(2)})</span>
                     ) : (
-                      ''
-                    )}
-                  </td>
-                  <td className="actions">
-                    {pendingFine && (
-                      <button
-                        className="pay-fine-button"
-                        onClick={() => setPayFineDialog({ isOpen: true, fineId: pendingFine.id, bookTitle: record.book.title })}
-                      >
-                        Pay Fine
-                      </button>
+                      <span className="fine-status">-</span>
                     )}
                   </td>
                 </tr>
@@ -391,17 +354,6 @@ export const BorrowingHistory = () => {
       <div className="records-table-container">
         {getTabContent()}
       </div>
-
-      <ConfirmDialog
-        isOpen={payFineDialog.isOpen}
-        title="Pay Fine"
-        message={`Are you sure you want to pay the fine for "${payFineDialog.bookTitle || ''}"?`}
-        confirmButtonText="Yes"
-        cancelButtonText="No"
-        onConfirm={handleConfirmPayFine}
-        onCancel={() => setPayFineDialog({ isOpen: false })}
-        type="warning"
-      />
     </div>
   )
 }

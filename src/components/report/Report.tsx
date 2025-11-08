@@ -204,7 +204,7 @@ const Report = () => {
       // Add main header
       doc.setFontSize(18);
       doc.setTextColor(44, 62, 80); // Dark blue color
-      doc.text('Library Management System', doc.internal.pageSize.width / 2, 15, { align: 'center' });
+      doc.text('BookSmart Library Management System', doc.internal.pageSize.width / 2, 15, { align: 'center' });
       
       // Add report title
       doc.setFontSize(14);
@@ -250,7 +250,7 @@ const Report = () => {
           doc.text(pageNumber, pageSize.width / 2, pageHeight - 10, { align: 'center' });
           
           // Add footer text
-          const footerText = '© 2025 Library Management System. All rights reserved.';
+          const footerText = '© 2025 BookSmart Library Management System. All rights reserved.';
           doc.text(footerText, pageSize.width / 2, pageHeight - 5, { align: 'center' });
         }
       });

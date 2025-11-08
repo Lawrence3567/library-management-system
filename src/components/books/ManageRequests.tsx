@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { ConfirmDialog } from '../common/ConfirmDialog'
+import { FinePaymentDialog } from '../common/FinePaymentDialog'
 import './ManageRequests.css'
 
 interface BorrowRequest {
@@ -73,6 +74,19 @@ export const ManageRequests = () => {
   })
   const [rejectionReason, setRejectionReason] = useState('')
   const [cannotReturnDialog, setCannotReturnDialog] = useState<{ isOpen: boolean; message?: string }>({ isOpen: false })
+  const [finePaymentDialog, setFinePaymentDialog] = useState<{
+    isOpen: boolean;
+    fineId?: string;
+    bookTitle?: string;
+    userName?: string;
+    amount?: number;
+  }>({
+    isOpen: false,
+    fineId: '',
+    bookTitle: '',
+    userName: '',
+    amount: 0
+  })
 
   useEffect(() => {
     fetchData()
@@ -176,6 +190,48 @@ export const ManageRequests = () => {
       bookTitle: request.book.title,
       userName: request.user.name
     })
+  }
+
+  const handleReceiveFinePayment = async (fineId: string, bookTitle: string, userName: string, amount: number) => {
+    console.log('handleReceiveFinePayment called with:', { fineId, bookTitle, userName, amount })
+    setError(null) // Clear any previous errors
+    const dialogState = {
+      isOpen: true,
+      fineId,
+      bookTitle,
+      userName,
+      amount
+    }
+    console.log('Setting dialog state to:', dialogState)
+    setFinePaymentDialog(dialogState)
+  }
+
+  // Track fine payment dialog state changes
+  useEffect(() => {
+    console.log('Fine payment dialog state changed:', finePaymentDialog)
+  }, [finePaymentDialog])
+
+  const handleConfirmFinePayment = async () => {
+    try {
+      setLoading(true)
+      const { error: updateError } = await supabase
+        .from('fines')
+        .update({
+          status: 'Paid',
+          payment_date: new Date().toISOString()
+        })
+        .eq('id', finePaymentDialog.fineId)
+
+      if (updateError) throw updateError
+
+      await fetchData()
+      setFinePaymentDialog({ isOpen: false })
+    } catch (err) {
+      console.error('Error processing fine payment:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred while processing the payment')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleConfirmAction = async () => {
@@ -387,6 +443,19 @@ export const ManageRequests = () => {
                             >
                               Mark as Returned
                             </button>
+                            {pendingFine && (
+                              <button
+                                onClick={() => handleReceiveFinePayment(
+                                  pendingFine.id,
+                                  loan.book.title,
+                                  loan.user.name,
+                                  pendingFine.amount
+                                )}
+                                className="payment-button"
+                              >
+                                Receive Fine Payment
+                              </button>
+                            )}
                           </td>
                         </tr>
                       )
@@ -664,6 +733,22 @@ export const ManageRequests = () => {
         onConfirm={() => setCannotReturnDialog({ isOpen: false })}
         onCancel={() => setCannotReturnDialog({ isOpen: false })}
         type="warning"
+      />
+
+      {/* Fine Payment Dialog */}
+      <FinePaymentDialog
+        isOpen={finePaymentDialog.isOpen}
+        bookTitle={finePaymentDialog.bookTitle}
+        userName={finePaymentDialog.userName}
+        amount={finePaymentDialog.amount}
+        loading={loading}
+        error={error}
+        showError={!!error}
+        onConfirm={handleConfirmFinePayment}
+        onClose={() => {
+          setError(null)
+          setFinePaymentDialog({ isOpen: false })
+        }}
       />
     </div>
   )

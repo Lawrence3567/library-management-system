@@ -1,0 +1,101 @@
+/* Form elements light mode styles */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary-color);
+  outline-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--shadow-color);
+}
+
+/* Table styles */
+table {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+tr:hover {
+  background-color: var(--background-secondary);
+}
+
+/* Modal and Dialog styles */
+.modal-content,
+.dialog-content {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+/* Card and container styles */
+.card,
+.container {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+/* Button variations */
+.button-secondary {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.button-secondary:hover {
+  background-color: var(--background-primary);
+  border-color: var(--primary-color);
+}
+
+/* Error and success messages */
+.error-message {
+  background-color: #fff5f5;
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.success-message {
+  background-color: #f0fff4;
+  color: var(--success-color);
+  border: 1px solid var(--success-color);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}

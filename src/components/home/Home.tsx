@@ -4,12 +4,12 @@ export const Home = () => {
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1>Library Management System</h1>
+        <h1>Home Page</h1>
       </header>
 
       <main className="home-content">
         <div className="welcome-message">
-          <h2>Welcome to the Library Management System</h2>
+          <h2>Welcome to BookSmart Library Management System</h2>
           <p>
             Manage your library resources efficiently and effectively.
             Use the side menu to navigate through different features.

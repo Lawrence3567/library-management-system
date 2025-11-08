@@ -153,6 +153,12 @@
   background-color: #5a3e33;
 }
 
+.payment-button {
+  background-color: #28a745;
+  color: white;
+  margin-left: 0.5rem;
+}
+
 .approve-button {
   background-color: #28a745;
   color: white;

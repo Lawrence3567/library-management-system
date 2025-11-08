@@ -326,7 +326,7 @@ export const Login = () => {
         <div className="auth-left">
           <img src={libraryImage} alt="Library" className="library-image" />
           <div className="overlay">
-            <h1>Welcome to Library Management System</h1>
+            <h1>BookSmart Library Management System</h1>
             <p>Discover and manage your library resources efficiently</p>
           </div>
         </div>
