@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState, useCallback, type ReactNode } from 'react'
-import type { Session, User } from '@supabase/supabase-js'
+import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Profile } from '../types/auth'
 
@@ -27,11 +27,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const getProfile = useCallback(async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Add timeout to prevent hanging queries
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 1000) // 1 second timeout
+      })
+
+      const queryPromise = supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single()
+
+      const { data, error } = await Promise.race([
+        queryPromise,
+        timeoutPromise
+      ]) as any
 
       if (error) {
         console.error('Error getting profile:', error)
@@ -49,8 +59,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       setLoading(true)
       
-      // Get the current session from Supabase
-      const { data: { session: currentSession }, error } = await supabase.auth.getSession()
+      // Get the current session from Supabase with timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Session fetch timeout')), 1000) // 1 second timeout
+      })
+
+      const sessionPromise = supabase.auth.getSession()
+
+      const { data: { session: currentSession }, error } = await Promise.race([
+        sessionPromise,
+        timeoutPromise
+      ]) as any
       
       if (error) {
         console.error('Error getting session:', error)
@@ -73,6 +92,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setSession(null)
       setUser(null)
     } finally {
+      // Always set loading to false to prevent infinite loading state
       setLoading(false)
     }
   }, [getProfile])
@@ -87,17 +107,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('Auth state changed:', event)
       
-      setSession(currentSession)
+      try {
+        setSession(currentSession)
 
-      if (currentSession?.user?.id) {
-        // Fetch user profile when session is available
-        const profile = await getProfile(currentSession.user.id)
-        setUser(profile)
-      } else {
+        if (currentSession?.user?.id) {
+          // Fetch user profile when session is available
+          const profile = await getProfile(currentSession.user.id)
+          setUser(profile)
+        } else {
+          setUser(null)
+        }
+      } catch (error) {
+        console.error('Error in auth state change handler:', error)
+        // Set user to null on error to prevent stale data
         setUser(null)
+      } finally {
+        // Always set loading to false, even if profile fetch fails
+        setLoading(false)
       }
-
-      setLoading(false)
     })
 
     // Cleanup subscription on unmount
