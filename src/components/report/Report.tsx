@@ -56,14 +56,14 @@ interface ReportData {
 // and uses the requested column headers.
 const REPORT_CONFIG: Record<ReportType, ReportConfig> = {
     'most-borrowed': {
-        sheetName: 'Most Borrowed',
+        sheetName: 'Most Borrowed Books',
         // Internal data keys (used to extract data, excludes book_id)
         dataKeys: ['Rank', 'title', 'author', 'borrow_count'], 
         // Friendly display names (used for Excel header row)
         displayNames: ['Rank', 'Title', 'Author', 'Times Borrowed']
     },
     'student-fines': {
-        sheetName: 'Student Fines',
+        sheetName: 'Student With Highest Fines',
         // Internal data keys (excludes user_id)
         dataKeys: ['Rank', 'name', 'email', 'total_fines', 'paid_fines', 'pending_fines'],
         // Friendly display names
@@ -81,6 +81,7 @@ const REPORT_CONFIG: Record<ReportType, ReportConfig> = {
 const Report = () => {
   const [reportType, setReportType] = useState<ReportType>('most-borrowed');
   const [limit, setLimit] = useState<number>(5);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [mostBorrowedBooks, setMostBorrowedBooks] = useState<BorrowedBook[]>([]);
   const [studentFines, setStudentFines] = useState<StudentFine[]>([]);
   const [overdueBooks, setOverdueBooks] = useState<OverdueBook[]>([]);
@@ -153,7 +154,10 @@ const Report = () => {
         
     switch (reportType) {
       case 'most-borrowed': {
-        const mostBorrowedData = mostBorrowedBooks.map((item, index) => ({
+        const sortedBooks = [...mostBorrowedBooks].sort((a, b) => 
+          sortOrder === 'asc' ? a.borrow_count - b.borrow_count : b.borrow_count - a.borrow_count
+        );
+        const mostBorrowedData = sortedBooks.map((item, index) => ({
           Rank: index + 1,
           ...item,
         }));
@@ -161,7 +165,10 @@ const Report = () => {
       }
       
       case 'student-fines': {
-        const studentFinesData = studentFines.map((item, index) => ({
+        const sortedFines = [...studentFines].sort((a, b) => 
+          sortOrder === 'asc' ? a.total_fines - b.total_fines : b.total_fines - a.total_fines
+        );
+        const studentFinesData = sortedFines.map((item, index) => ({
           Rank: index + 1,
           ...item,
         }));
@@ -169,7 +176,10 @@ const Report = () => {
       }
       
       case 'overdue': {
-        return { data: overdueBooks, ...config };
+        const sortedOverdue = [...overdueBooks].sort((a, b) => 
+          sortOrder === 'asc' ? a.fine_amount - b.fine_amount : b.fine_amount - a.fine_amount
+        );
+        return { data: sortedOverdue, ...config };
       }
       
       default: {
@@ -328,6 +338,7 @@ const Report = () => {
             <option value="student-fines">Students with Highest Fines</option>
             <option value="overdue">Overdue Books</option>
           </select>
+
           {reportType !== 'overdue' && (
             <select
               value={limit}
@@ -369,21 +380,32 @@ const Report = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>Rank</th>
+                    <th 
+                      className={`sortable-header ${sortOrder}`}
+                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    >
+                      Rank
+                    </th>
                     <th>Title</th>
                     <th>Author</th>
                     <th>Times Borrowed</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {mostBorrowedBooks.map((book, index) => (
-                    <tr key={book.book_id}>
-                      <td>{index + 1}</td>
-                      <td>{book.title}</td>
-                      <td>{book.author}</td>
-                      <td>{book.borrow_count}</td>
-                    </tr>
-                  ))}
+                  {[...mostBorrowedBooks]
+                    .sort((a, b) => sortOrder === 'asc' 
+                      ? a.borrow_count - b.borrow_count 
+                      : b.borrow_count - a.borrow_count
+                    )
+                    .map((book, index) => (
+                      <tr key={book.book_id}>
+                        <td>{index + 1}</td>
+                        <td>{book.title}</td>
+                        <td>{book.author}</td>
+                        <td>{book.borrow_count}</td>
+                      </tr>
+                    ))
+                  }
                 </tbody>
               </table>
             </div>
@@ -395,7 +417,12 @@ const Report = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>Rank</th>
+                    <th 
+                      className={`sortable-header ${sortOrder}`}
+                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    >
+                      Rank
+                    </th>
                     <th>Student Name</th>
                     <th>Email</th>
                     <th>Total Fines</th>
@@ -404,16 +431,21 @@ const Report = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {studentFines.map((student, index) => (
-                    <tr key={student.user_id}>
-                      <td>{index + 1}</td>
-                      <td>{student.name}</td>
-                      <td>{student.email}</td>
-                      <td>RM {student.total_fines.toFixed(2)}</td>
-                      <td>RM {student.paid_fines.toFixed(2)}</td>
-                      <td>RM {student.pending_fines.toFixed(2)}</td>
-                    </tr>
-                  ))}
+                  {[...studentFines]
+                    .sort((a, b) => sortOrder === 'asc' 
+                      ? a.total_fines - b.total_fines 
+                      : b.total_fines - a.total_fines
+                    )
+                    .map((student, index) => (
+                      <tr key={student.user_id}>
+                        <td>{index + 1}</td>
+                        <td>{student.name}</td>
+                        <td>{student.email}</td>
+                        <td>RM {student.total_fines.toFixed(2)}</td>
+                        <td>RM {student.paid_fines.toFixed(2)}</td>
+                        <td>RM {student.pending_fines.toFixed(2)}</td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>

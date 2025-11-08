@@ -74,7 +74,6 @@ const FineRules: React.FC = () => {
     <div className="fine-rules-container">
       <div className="fine-rules-header">
         <h1>Fine Rules Management</h1>
-        <p>Set the fine amount per day for overdue books</p>
       </div>
 
       <form className="fine-rules-form" onSubmit={handleSubmit}>

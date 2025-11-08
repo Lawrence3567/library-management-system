@@ -153,8 +153,9 @@ export const Profile = () => {
               type="email" 
               value={profile.email} 
               onChange={handleInputChange} 
-              required
+              disabled // Disable email input
             />
+            <small>Email cannot be directly changed here for security/verification reasons.</small>
           </div>
 
           <div className="profile-form-group">

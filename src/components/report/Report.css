@@ -1,21 +1,23 @@
 .report-container {
   padding: 2rem;
-  margin-left: 250px; /* Match the width of side menu */
 }
 
 .report-header {
-  margin-bottom: 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #6F4C3E;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(111, 76, 62, 0.2);
 }
 
 .report-header h1 {
-  color: #2C1810;
-  font-size: 2rem;
   margin: 0;
+  font-size: 1.75rem;
+  color: #E8CBA0;
+  font-weight: 600;
 }
 
 .report-controls {
@@ -25,7 +27,8 @@
 }
 
 .report-type-select,
-.limit-select {
+.limit-select,
+.sort-order-select {
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -38,8 +41,33 @@
   gap: 0.5rem;
 }
 
+.sortable-header {
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.sortable-header:hover {
+  background-color: #f0f0f0;
+}
+
+.sortable-header::after {
+  content: '↕';
+  position: absolute;
+  right: 8px;
+  color: #666;
+}
+
+.sortable-header.asc::after {
+  content: '↑';
+}
+
+.sortable-header.desc::after {
+  content: '↓';
+}
+
 .export-button {
-  background-color: #6F4C3E;
+  background-color: #A67C4D;
   color: white;
   border: none;
   padding: 0.5rem 1rem;

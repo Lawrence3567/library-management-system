@@ -5,14 +5,21 @@
 }
 
 .borrowing-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #6F4C3E;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(111, 76, 62, 0.2);
 }
 
 .borrowing-history-header h1 {
-  color: #333;
-  font-size: 1.5rem;
-  font-weight: 600;
   margin: 0;
+  font-size: 1.75rem;
+  color: #E8CBA0;
+  font-weight: 600;
 }
 
 /* Tabs */

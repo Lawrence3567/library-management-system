@@ -186,28 +186,28 @@ export const Login = () => {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const { error: signInError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-          redirectTo: `${window.location.origin}`
-        }
-      })
-      if (signInError) throw signInError
-    } catch (err) {
-      console.error('Error with Google sign in:', err)
-      setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
-    } finally {
-      setLoading(false)
-    }
-  }
+  // const handleGoogleLogin = async () => {
+  //   try {
+  //     setLoading(true)
+  //     setError(null)
+  //     const { error: signInError } = await supabase.auth.signInWithOAuth({
+  //       provider: 'google',
+  //       options: {
+  //         queryParams: {
+  //           access_type: 'offline',
+  //           prompt: 'consent',
+  //         },
+  //         redirectTo: `${window.location.origin}`
+  //       }
+  //     })
+  //     if (signInError) throw signInError
+  //   } catch (err) {
+  //     console.error('Error with Google sign in:', err)
+  //     setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
 
   const handleRoleSelection = async (role: 'Student' | 'Librarian') => {
     if (!pendingGoogleUser) return
@@ -450,18 +450,20 @@ export const Login = () => {
                 </button>
               </form>
             )}
-            
-            <div className="auth-divider">
+
+           {/* <div className="auth-divider">
               <span>OR</span>
             </div>
 
-            <button 
+            {/* <button 
               onClick={handleGoogleLogin} 
               disabled={loading}
               className="google-button"
             >
-              {loading ? 'Loading...' : 'Sign in with Google'}
-            </button>
+              {loading && 'Loading...' }
+            </button> */}
+
+            <p>{loading && 'Loading...' }</p>
             
             <p className="auth-switch">
               {isLogin ? "Don't have an account? " : "Already have an account? "}
