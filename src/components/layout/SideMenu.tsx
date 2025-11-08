@@ -37,6 +37,11 @@ const SideMenu = ({ isCollapsed, onToggleCollapse }: SideMenuProps) => {
         path: '/fine-rules',
         label: 'Fine Rules',
         icon: '💰'
+      },
+      {
+        path: '/report',
+        label: 'Reports',
+        icon: '📊'
       }
     ] : [
       {
@@ -50,11 +55,6 @@ const SideMenu = ({ isCollapsed, onToggleCollapse }: SideMenuProps) => {
         icon: '📖'
       }
     ]),
-    {
-      path: '/report',
-      label: 'Reports',
-      icon: '📊'
-    }
   ];
 
   const handleLogout = async () => {

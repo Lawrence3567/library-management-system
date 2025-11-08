@@ -3,9 +3,146 @@
   margin-left: 250px; /* Match the width of side menu */
 }
 
+.report-header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.report-header h1 {
+  color: #2C1810;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.report-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.report-type-select,
+.limit-select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  min-width: 150px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.export-button {
+  background-color: #6F4C3E;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.export-button:hover {
+  background-color: #5a3e33;
+}
+
+.export-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #dc3545;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
+}
+
 .report-content {
   background: white;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.report-content h2 {
+  color: #2C1810;
+  font-size: 1.5rem;
+  margin: 0 0 1.5rem 0;
+}
+
+/* Table Styles */
+.most-borrowed-table,
+.student-fines-table,
+.overdue-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+
+tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Specific table column styles */
+.student-fines-table td:nth-child(4),
+.student-fines-table td:nth-child(5),
+.student-fines-table td:nth-child(6),
+.overdue-table td:last-child {
+  font-family: monospace;
+  text-align: right;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .report-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-controls {
+    flex-direction: column;
+  }
+
+  .report-type-select,
+  .limit-select,
+  .export-button {
+    width: 100%;
+  }
 }
