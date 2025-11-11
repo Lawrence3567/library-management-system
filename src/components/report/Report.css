@@ -154,7 +154,6 @@ tr:hover {
 .student-fines-table td:nth-child(6),
 .overdue-table td:last-child {
   font-family: monospace;
-  text-align: right;
 }
 
 /* Responsive design */
