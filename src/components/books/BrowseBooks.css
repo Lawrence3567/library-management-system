@@ -122,3 +122,33 @@
   border-radius: 4px;
   margin-bottom: 1rem;
 }
+
+.error-message-container {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-align: center;
+  background-color: #fee2e2;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+.error-message {
+  margin: 0;
+}
+
+.success-message-container {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-align: center;
+  background-color: #e6ffed;
+  color: #28a745;
+  border: 1px solid #28a745;
+}
+
+.success-message {
+  margin: 0;
+}

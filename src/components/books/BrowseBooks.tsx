@@ -20,6 +20,7 @@ export const BrowseBooks = () => {
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [searchField, setSearchField] = useState<'title' | 'author' | 'category' | 'isbn'>('title')
   const [borrowDialog, setBorrowDialog] = useState<{
@@ -87,7 +88,9 @@ export const BrowseBooks = () => {
 
       if (existingRequests && existingRequests.length > 0) {
         setError('You already have a pending request for this book')
+        // Close dialog and auto-clear error after 3 seconds
         setBorrowDialog({ isOpen: false, bookId: '', bookTitle: '' })
+        setTimeout(() => setError(null), 3000)
         return
       }
 
@@ -111,11 +114,20 @@ export const BrowseBooks = () => {
 
       if (updateError) throw updateError
 
-      await fetchBooks()
+      // Success - close dialog and refresh books
       setBorrowDialog({ isOpen: false, bookId: '', bookTitle: '' })
+      setError(null)
+      setSuccess('Borrow request submitted successfully!')
+      // Auto-clear success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000)
+      await fetchBooks()
     } catch (err) {
       console.error('Error requesting book:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred while requesting the book')
+      const errorMsg = err instanceof Error ? err.message : 'An error occurred while requesting the book'
+      setError(errorMsg)
+      // Close dialog and auto-clear error after 3 seconds
+      setBorrowDialog({ isOpen: false, bookId: '', bookTitle: '' })
+      setTimeout(() => setError(null), 3000)
     } finally {
       setLoading(false)
     }
@@ -131,8 +143,7 @@ export const BrowseBooks = () => {
     return field.includes(searchValue)
   })
 
-  if (loading) return <div className="browse-books-container">Loading...</div>
-  if (error) return <div className="browse-books-container error">{error}</div>
+  if (loading && books.length === 0) return <div className="browse-books-container">Loading...</div>
 
   return (
     <div className="browse-books-container">
@@ -142,6 +153,18 @@ export const BrowseBooks = () => {
           <Link to="/borrowing-history" className="borrowing-history-link">View Borrowing History</Link>
         </div>
       </header>
+
+      {error && (
+        <div className="error-message-container">
+          <p className="error-message">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="success-message-container">
+          <p className="success-message">{success}</p>
+        </div>
+      )}
 
       <div className="search-container">
         <input
