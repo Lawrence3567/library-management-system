@@ -42,7 +42,7 @@ interface BorrowRequest {
 type TabType = 'requests' | 'active' | 'overdue' | 'returned'
 
 export const BorrowingHistory = () => {
-  const { user, loading: userLoading } = useAuth()
+  const { user, session, loading: userLoading } = useAuth()
   const [activeTab, setActiveTab] = useState<TabType>('requests')
   const [records, setRecords] = useState<BorrowingRecord[]>([])
   const [requests, setRequests] = useState<BorrowRequest[]>([])
@@ -50,14 +50,15 @@ export const BorrowingHistory = () => {
   const [error, setError] = useState<string | null>(null)
 
   const fetchBorrowingRecords = useCallback(async () => {
-    if (!user?.id) {
+    const userId = user?.id ?? session?.user?.id
+    if (!userId) {
       console.log('No user ID available')
       return
     }
     try {
       setLoading(true)
       setError(null)
-      console.log('Starting fetch for user:', user?.id)
+      console.log('Starting fetch for user:', userId)
       
       // Fetch borrow requests
       const { data: requestData, error: requestError } = await supabase
@@ -69,7 +70,7 @@ export const BorrowingHistory = () => {
             author
           )
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', userId)
         .order('status', { ascending: false })
         .order('requested_date', { ascending: true })
         
@@ -92,7 +93,7 @@ export const BorrowingHistory = () => {
             payment_date
           )
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', userId)
         .order('status', { ascending: false })
         .order('due_date', { ascending: true })
 
@@ -111,21 +112,22 @@ export const BorrowingHistory = () => {
     } finally {
       setLoading(false)
     }
-  }, [user?.id])
+  }, [user?.id, session?.user?.id])
 
   useEffect(() => {
-    console.log('Effect running with user:', user?.id)
-    if (user?.id) {
-      console.log('Fetching records for user:', user.id)
+    const userId = user?.id ?? session?.user?.id
+    console.log('Effect running with userId:', userId)
+    if (userId) {
+      console.log('Fetching records for user:', userId)
       fetchBorrowingRecords()
     }
-  }, [user?.id, fetchBorrowingRecords])
+  }, [user?.id, session?.user?.id, fetchBorrowingRecords])
 
   if (userLoading) {
     return <div className="borrowing-history-container">Loading user data...</div>
   }
 
-  if (!user) {
+  if (!user && !session) {
     return <div className="borrowing-history-container error">Please log in to view your borrowing history.</div>
   }
 

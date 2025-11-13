@@ -16,7 +16,7 @@ interface Book {
 }
 
 export const BrowseBooks = () => {
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -64,7 +64,8 @@ export const BrowseBooks = () => {
   }
 
   const handleBorrowConfirm = async () => {
-    if (!user || !user.id) {
+    const userId = user?.id ?? session?.user?.id
+    if (!userId) {
       setError('User session not found. Please log in again.')
       setBorrowDialog({ isOpen: false, bookId: '', bookTitle: '' })
       return
@@ -79,7 +80,7 @@ export const BrowseBooks = () => {
         .from('borrow_requests')
         .select('*')
         .eq('book_id', borrowDialog.bookId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('status', 'Pending Approval')
 
       if (checkError) throw checkError
@@ -95,7 +96,7 @@ export const BrowseBooks = () => {
         .insert([
           {
             book_id: borrowDialog.bookId,
-            user_id: user.id,
+            user_id: userId,
             status: 'Pending Approval'
           }
         ])

@@ -47,9 +47,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [])
 
   const loadSession = useCallback(async () => {
+    setLoading(true)
     try {
-      setLoading(true)
-      
       // Get the current session from Supabase with timeout
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Session fetch timeout')), 1000) // 1 second timeout
@@ -102,21 +101,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
         console.log('Auth state changed:', event)
-        
+
         try {
           setSession(currentSession)
 
-          if (currentSession?.user?.id) {
-            // Fetch user profile when session is available
-            const profile = await getProfile(currentSession.user.id)
-            setUser(profile)
-          } else {
+          if (event === 'SIGNED_OUT') {
+            // Clear everything when the user signs out
             setUser(null)
+          } else if (currentSession?.user?.id) {
+            // Fetch user profile when session is available; only overwrite if we get a profile
+            const profile = await getProfile(currentSession.user.id)
+            if (profile) setUser(profile)
+            // If profile is null, keep existing user (avoid blanking on transient failures)
           }
         } catch (error) {
           console.error('Error in auth state change handler:', error)
-          // Set user to null on error to prevent stale data
-          setUser(null)
+          // Do not aggressively clear user on transient errors
         } finally {
           // Always set loading to false, even if profile fetch fails
           setLoading(false)
