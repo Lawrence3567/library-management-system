@@ -1,20 +1,8 @@
-import { createContext, useEffect, useState, useCallback, type ReactNode } from 'react'
-import type { Session } from '@supabase/supabase-js'
+import { useEffect, useState, useCallback, type ReactNode } from 'react'
+import type { Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Profile } from '../types/auth'
-
-interface AuthContextType {
-  session: Session | null
-  user: Profile | null
-  loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>
-  signOut: () => Promise<void>
-  updateProfile: (updates: Partial<Profile>) => Promise<void>
-  refreshSession: () => Promise<void>
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined)
+import { AuthContext, type AuthContextType } from './auth.context'
 
 interface AuthProviderProps {
   children: ReactNode
@@ -28,7 +16,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const getProfile = useCallback(async (userId: string) => {
     try {
       // Add timeout to prevent hanging queries
-      const timeoutPromise = new Promise((_, reject) => {
+      const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Profile fetch timeout')), 1000) // 1 second timeout
       })
 
@@ -38,10 +26,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         .eq('id', userId)
         .single()
 
-      const { data, error } = await Promise.race([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await Promise.race<any>([
         queryPromise,
         timeoutPromise
-      ]) as any
+      ])
+
+      const { data, error } = result
 
       if (error) {
         console.error('Error getting profile:', error)
@@ -60,16 +51,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setLoading(true)
       
       // Get the current session from Supabase with timeout
-      const timeoutPromise = new Promise((_, reject) => {
+      const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Session fetch timeout')), 1000) // 1 second timeout
       })
 
       const sessionPromise = supabase.auth.getSession()
 
-      const { data: { session: currentSession }, error } = await Promise.race([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await Promise.race<any>([
         sessionPromise,
         timeoutPromise
-      ]) as any
+      ])
+
+      const { data: { session: currentSession }, error } = result
       
       if (error) {
         console.error('Error getting session:', error)
@@ -98,60 +92,82 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [getProfile])
 
   useEffect(() => {
-    // Load session on mount
-    loadSession()
+    // Initialize auth with sequential steps to avoid race conditions
+    const initializeAndListen = async () => {
+      // Step 1: Load session first (ensure initial state is set)
+      await loadSession()
 
-    // Set up auth state change listener
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log('Auth state changed:', event)
-      
-      try {
-        setSession(currentSession)
+      // Step 2: Only after initial load, set up the auth state listener
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+        console.log('Auth state changed:', event)
+        
+        try {
+          setSession(currentSession)
 
-        if (currentSession?.user?.id) {
-          // Fetch user profile when session is available
-          const profile = await getProfile(currentSession.user.id)
-          setUser(profile)
-        } else {
+          if (currentSession?.user?.id) {
+            // Fetch user profile when session is available
+            const profile = await getProfile(currentSession.user.id)
+            setUser(profile)
+          } else {
+            setUser(null)
+          }
+        } catch (error) {
+          console.error('Error in auth state change handler:', error)
+          // Set user to null on error to prevent stale data
           setUser(null)
+        } finally {
+          // Always set loading to false, even if profile fetch fails
+          setLoading(false)
         }
-      } catch (error) {
-        console.error('Error in auth state change handler:', error)
-        // Set user to null on error to prevent stale data
-        setUser(null)
-      } finally {
-        // Always set loading to false, even if profile fetch fails
-        setLoading(false)
+      })
+
+      // Step 3: Handle tab visibility change to reload session/profile
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          console.log('Tab became visible, reloading profile...')
+          // Reload the session and profile when returning to the tab
+          loadSession()
+        }
       }
+
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+
+      // Return cleanup function
+      return () => {
+        subscription.unsubscribe()
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
+    }
+
+    // Execute initialization and get cleanup function
+    let unsubscribe: (() => void) | undefined
+
+    initializeAndListen().then((cleanup) => {
+      unsubscribe = cleanup
     })
 
     // Cleanup subscription on unmount
     return () => {
-      subscription.unsubscribe()
+      unsubscribe?.()
     }
   }, [loadSession, getProfile])
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<{ error: AuthError | null }> => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (error) {
-        return { error }
-      }
-
-      // Session will be updated via the onAuthStateChange listener
-      return { error: null }
+      return { error: error || null }
     } catch (error) {
-      return { error }
+      return { error: error as AuthError }
     }
   }
 
-  const signUp = async (email: string, password: string, metadata?: any) => {
+  const signUp = async (email: string, password: string, metadata?: Record<string, unknown>): Promise<{ error: AuthError | null }> => {
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -161,13 +177,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         },
       })
 
-      if (error) {
-        return { error }
-      }
-
-      return { error: null }
+      return { error: error || null }
     } catch (error) {
-      return { error }
+      return { error: error as AuthError }
     }
   }
 
@@ -220,3 +232,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
+
+export { AuthContext }
+export type { AuthContextType }

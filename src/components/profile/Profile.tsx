@@ -12,7 +12,7 @@ interface UserProfile {
 }
 
 export const Profile = () => {
-  const { user, session, loading: authLoading, updateProfile: updateContextProfile, refreshSession } = useAuth();
+  const { user, session, loading: authLoading, updateProfile: updateContextProfile } = useAuth();
   const [profile, setProfile] = useState<UserProfile>({
     email: '',
     name: '',
@@ -23,20 +23,55 @@ export const Profile = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const navigate = useNavigate();
 
+  // Fallback function to fetch profile directly from Supabase if context user is null
+  const fetchProfileDirectly = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (error) {
+        console.error('Error fetching profile directly:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error in fetchProfileDirectly:', error)
+      return null
+    }
+  }
+
   useEffect(() => {
     // Initialize profile from context user data
     if (user) {
+      console.log('Profile: Using user from context:', user)
       setProfile({
         email: user.email,
         name: user.name,
         phone: user.phone,
         role: user.role
       });
+    } else if (session?.user?.id && !authLoading) {
+      // Fallback: if user is null but session exists, fetch profile directly
+      console.log('Profile: User is null, fetching directly with session:', session.user.id)
+      fetchProfileDirectly(session.user.id).then((data) => {
+        if (data) {
+          setProfile({
+            email: data.email || '',
+            name: data.name || '',
+            phone: data.phone || '',
+            role: data.role || ''
+          });
+        }
+      })
     } else if (!authLoading && !session) {
       // No user and not loading, redirect to login
       navigate('/auth/login');
     }
-  }, [user, authLoading, session, navigate]);
+  }, [user, session, authLoading, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -93,10 +128,17 @@ export const Profile = () => {
         
         if (authError) console.error("Warning: Failed to update auth metadata.", authError);
         
-        // Refresh the session to ensure the context gets the latest data
-        await refreshSession();
+        // Don't call refreshSession immediately as it may trigger profile timeout
+        // The AuthContext listener will handle session updates
+        
+        const successMsg = { type: 'success' as const, text: 'Profile updated successfully!' };
+        setMessage(successMsg);
+        console.log('Profile updated, message set:', successMsg);
 
-        setMessage({ type: 'success', text: 'Profile updated successfully!' });
+        // Auto-clear the success message after 3 seconds
+        setTimeout(() => {
+          setMessage(null);
+        }, 3000);
 
     } catch (error) {
         console.error('Error updating profile:', error);
