@@ -201,8 +201,21 @@ export const BorrowingHistory = () => {
             </tr>
           ) : (
             records.filter(r => r.status === 'Overdue').map((record) => {
-              const daysOverdue = Math.ceil(
-                (new Date().getTime() - new Date(record.due_date).getTime()) / (1000 * 60 * 60 * 24)
+              // Calculate days overdue accounting for timezone
+              // Convert UTC dates to local timezone midnight for accurate day calculation
+              const now = new Date();
+              const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              
+              const dueDateUTC = new Date(record.due_date);
+              const dueDateMidnight = new Date(
+                dueDateUTC.getUTCFullYear(),
+                dueDateUTC.getUTCMonth(),
+                dueDateUTC.getUTCDate()
+              );
+              
+              const daysOverdue = Math.max(
+                0,
+                Math.ceil((todayMidnight.getTime() - dueDateMidnight.getTime()) / (1000 * 60 * 60 * 24))
               );
               const pendingFine = record.fines?.find(f => f.status === 'Pending');
 

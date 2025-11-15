@@ -417,9 +417,19 @@ export const ManageRequests = () => {
                   </tr>
                 ) : (
                   activeLoans.map((loan) => {
-                      const dueDate = new Date(loan.due_date)
-                      const isOverdue = dueDate < new Date()
-                      const daysOverdue = isOverdue ? Math.ceil((Date.now() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0
+                      // Calculate days overdue accounting for timezone
+                      const now = new Date()
+                      const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+                      
+                      const dueDateUTC = new Date(loan.due_date)
+                      const dueDateMidnight = new Date(
+                        dueDateUTC.getUTCFullYear(),
+                        dueDateUTC.getUTCMonth(),
+                        dueDateUTC.getUTCDate()
+                      )
+                      
+                      const isOverdue = todayMidnight >= dueDateMidnight
+                      const daysOverdue = isOverdue ? Math.max(0, Math.ceil((todayMidnight.getTime() - dueDateMidnight.getTime()) / (1000 * 60 * 60 * 24))) : 0
                       const pendingFine = loan.fines?.find(f => f.status === 'Pending')
 
                       return (
@@ -427,7 +437,7 @@ export const ManageRequests = () => {
                           <td>{loan.book.title}</td>
                           <td>{loan.user.name}</td>
                           <td>{new Date(loan.borrowed_date).toLocaleDateString()}</td>
-                          <td className={isOverdue ? 'overdue' : ''}>{dueDate.toLocaleDateString()}</td>
+                          <td className={isOverdue ? 'overdue' : ''}>{new Date(loan.due_date).toLocaleDateString()}</td>
                           <td className={isOverdue ? 'overdue' : ''}>{daysOverdue > 0 ? `${daysOverdue} days` : '-'}</td>
                           <td>
                             {pendingFine ? (
