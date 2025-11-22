@@ -18,6 +18,22 @@ const FineRules: React.FC = () => {
   const [success, setSuccess] = useState('');
   const { user } = useAuth();
 
+  const formatTimestampWithTimezone = (isoString: string) => {
+    // Parse the ISO string as UTC
+    const date = new Date(isoString);
+    
+    // Format with timezone information
+    return date.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
+    });
+  };
+
   useEffect(() => {
     fetchCurrentRule();
   }, []);
@@ -107,7 +123,7 @@ const FineRules: React.FC = () => {
                 Current fine amount: <strong>RM {currentRule.amount_per_day.toFixed(2)}</strong> per day
               </p>
               <p className="last-updated">
-                Last updated: {new Date(currentRule.updated_at).toLocaleString()}
+                Last updated: {formatTimestampWithTimezone(currentRule.updated_at)}
               </p>
             </>
           ) : (
